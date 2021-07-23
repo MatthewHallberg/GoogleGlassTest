@@ -1,13 +1,18 @@
 package com.example.glass;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewFeature;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.example.glass.GlassGestureDetector.Gesture;
 import com.example.glass.GlassGestureDetector.OnGestureListener;
@@ -18,7 +23,10 @@ public class MainActivity extends AppCompatActivity implements OnGestureListener
 
     private static final int REQUEST_CODE = 999;
 
+    private int scrollSpeed = 150;
+
     private GlassGestureDetector glassGestureDetector;
+    private WebView myWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +34,11 @@ public class MainActivity extends AppCompatActivity implements OnGestureListener
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
         glassGestureDetector = new GlassGestureDetector(this, this);
+
+        myWebView = (WebView) findViewById(R.id.webview);
+        myWebView.setWebViewClient(new WebViewClient());
+        myWebView.getSettings().setJavaScriptEnabled(true);
+        myWebView.loadUrl("http://www.google.com");
     }
 
     @Override
@@ -52,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements OnGestureListener
             Log.d("app", "results: " + results.toString());
             if (results != null && results.size() > 0 && !results.get(0).isEmpty()) {
                 String speechResult = results.get(0);
+                myWebView.loadUrl("http://www.google.com/search?q=" + speechResult);
                 Log.d("app", speechResult);
             }
         } else {
@@ -88,6 +102,22 @@ public class MainActivity extends AppCompatActivity implements OnGestureListener
             case TAP:
                 Log.d("App", "TAPPED!");
                 detectSpeech();
+                return true;
+            case SWIPE_FORWARD:
+                Log.d("App", "swipe forward");
+                myWebView.scrollBy(0, scrollSpeed);
+                return true;
+            case SWIPE_BACKWARD:
+                Log.d("App", "swipe backward");
+                myWebView.scrollBy(0, -scrollSpeed);
+                return true;
+            case TWO_FINGER_SWIPE_FORWARD:
+                Log.d("App", "double forward");
+                Log.d("app", myWebView.findFocus().toString());
+                return true;
+            case TWO_FINGER_SWIPE_BACKWARD:
+                Log.d("App", "double backward");
+                myWebView.goBack();
                 return true;
             default:
                 return false;
