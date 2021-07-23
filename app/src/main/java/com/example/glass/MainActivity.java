@@ -1,29 +1,24 @@
 package com.example.glass;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.webkit.WebSettingsCompat;
-import androidx.webkit.WebViewFeature;
-
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.speech.RecognizerIntent;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-
 import com.example.glass.GlassGestureDetector.Gesture;
 import com.example.glass.GlassGestureDetector.OnGestureListener;
-
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnGestureListener {
 
     private static final int REQUEST_CODE = 999;
 
-    private int scrollSpeed = 150;
+    private int scrollSpeed = 100;
 
     private GlassGestureDetector glassGestureDetector;
     private WebView myWebView;
@@ -38,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements OnGestureListener
         myWebView = (WebView) findViewById(R.id.webview);
         myWebView.setWebViewClient(new WebViewClient());
         myWebView.getSettings().setJavaScriptEnabled(true);
-        myWebView.loadUrl("http://www.google.com");
+        myWebView.loadUrl("https://www.youtube.com/c/matthewhallberg");
     }
 
     @Override
@@ -113,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements OnGestureListener
                 return true;
             case TWO_FINGER_SWIPE_FORWARD:
                 Log.d("App", "double forward");
-                Log.d("app", myWebView.findFocus().toString());
+                simulateClick(myWebView.getWidth()/4,myWebView.getHeight()/2);
                 return true;
             case TWO_FINGER_SWIPE_BACKWARD:
                 Log.d("App", "double backward");
@@ -122,5 +117,32 @@ public class MainActivity extends AppCompatActivity implements OnGestureListener
             default:
                 return false;
         }
+    }
+
+    //https://stackoverflow.com/questions/20886857/how-to-simulate-a-tap-at-a-specific-coordinate-in-an-android-webview
+    private void simulateClick(float x, float y) {
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+        MotionEvent.PointerProperties[] properties = new MotionEvent.PointerProperties[1];
+        MotionEvent.PointerProperties pp1 = new MotionEvent.PointerProperties();
+        pp1.id = 0;
+        pp1.toolType = MotionEvent.TOOL_TYPE_FINGER;
+        properties[0] = pp1;
+        MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[1];
+        MotionEvent.PointerCoords pc1 = new MotionEvent.PointerCoords();
+        pc1.x = x;
+        pc1.y = y;
+        pc1.pressure = 1;
+        pc1.size = 1;
+        pointerCoords[0] = pc1;
+        MotionEvent motionEvent = MotionEvent.obtain(downTime, eventTime,
+                MotionEvent.ACTION_DOWN, 1, properties,
+                pointerCoords, 0,  0, 1, 1, 0, 0, 0, 0 );
+        dispatchTouchEvent(motionEvent);
+
+        motionEvent = MotionEvent.obtain(downTime, eventTime,
+                MotionEvent.ACTION_UP, 1, properties,
+                pointerCoords, 0,  0, 1, 1, 0, 0, 0, 0 );
+        dispatchTouchEvent(motionEvent);
     }
 }
